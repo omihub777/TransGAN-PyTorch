@@ -1,0 +1,7 @@
+torch
+torchvision
+torchsummary
+comet-ml
+numpy
+matplotlib
+pandas
