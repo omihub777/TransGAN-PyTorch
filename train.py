@@ -78,7 +78,7 @@ class Trainer:
                 f_img = g(z)
             out = d(img)
             f_out = d(f_img)
-            loss = (criterion(out, real*0.9) + criterion(out, fake))/2.
+            loss = (criterion(out, real*0.9) + criterion(f_out, fake))/2.
         scaler.scale(loss).backward()
         scaler.step(d_opt)
         scaler.update()
