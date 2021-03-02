@@ -15,7 +15,7 @@ parser.add_argument("--model-size", default="s", help="s, m, l, xl")
 parser.add_argument("--size", default=32, type=int)
 parser.add_argument("--dataset", default="c10")
 parser.add_argument("--g-lr", default=5e-5, type=float)
-parser.add_argument("--d-lr", default=4e-4, type=float)
+parser.add_argument("--d-lr", default=1e-4, type=float)
 parser.add_argument("--criterion", default="ns", help="ns, mse")
 parser.add_argument("--optimizer", default="adam")
 # parser.add_argument("--g-batch-size", default=32, type=int)
@@ -24,8 +24,8 @@ parser.add_argument("--batch-size", default=64, type=int)
 parser.add_argument("--beta1", default=0., type=float)
 parser.add_argument("--beta2", default=0.99, type=float)
 parser.add_argument("--patch", default=8, type=int)
-parser.add_argument("--max-steps", default=20000, type=int)
-parser.add_argument("--log-steps", default=1000, type=int, help="Log images every this step.")
+parser.add_argument("--max-steps", default=100000, type=int)
+parser.add_argument("--log-steps", default=200, type=int, help="Log images every this step.")
 parser.add_argument("--dry-run", action="store_true")
 parser.add_argument("--diffaugment", action="store_true")
 parser.add_argument("--seed", default=42, type=int)
@@ -67,6 +67,7 @@ class Trainer:
                 img = img.to(self.device)
                 self.train_step(g, d, img, criterion, optimizers)
                 if self.curr_step % self.args.log_steps==0 or self.args.dry_run:
+                    import IPython ; IPython.embed() ; exit(1)
                     g.eval()
                     z = torch.randn(32, self.emb_dim, device=self.device)
                     with torch.cuda.amp.autocast():
@@ -101,7 +102,7 @@ class Trainer:
         scaler.scale(loss).backward()
         scaler.step(d_opt)
         scaler.update()
-        self.logger.log_metric("d_loss", loss)
+        self.logger.log_metric("d_loss", loss, step=self.curr_step)
 
         # G
         with torch.cuda.amp.autocast():
@@ -113,7 +114,7 @@ class Trainer:
         scaler.scale(loss).backward()
         scaler.step(g_opt)
         scaler.update()
-        self.logger.log_metric("g_loss", loss)
+        self.logger.log_metric("g_loss", loss, step=self.curr_step)
 
         self.curr_step += 1
     
@@ -147,5 +148,3 @@ if __name__ == "__main__":
     g,d = get_model(args)
     trainer = Trainer(logger=logger, args=args)
     trainer.fit(g, d, train_dl)
-
-
