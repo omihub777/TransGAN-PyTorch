@@ -5,3 +5,4 @@ comet-ml
 numpy
 matplotlib
 pandas
+kornia

@@ -45,6 +45,8 @@ def get_model(args):
 def get_criterion(args):
     if args.criterion == "mse":
         criterion = nn.MSELoss()
+    elif args.criterion=="ns":
+        criterion = nn.BCEWithLogitsLoss()
     else:
         raise ValueError(f"{args.criterion}?")
 

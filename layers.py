@@ -6,7 +6,7 @@ import torch.nn.functional as F
 
 
 class MultiHeadSelfAttention(nn.Module):
-    def __init__(self, in_c: int, head=8):
+    def __init__(self, in_c: int, head:int=8, drop:float=0.):
         super(MultiHeadSelfAttention, self).__init__()
         self.head = head
         self.sqrt_d = math.sqrt(in_c)
@@ -16,7 +16,7 @@ class MultiHeadSelfAttention(nn.Module):
         self.V = nn.Linear(in_c, in_c)
 
         self.O = nn.Linear(in_c, in_c)
-        self.dropout = nn.Dropout(0.1)
+        self.dropout = nn.Dropout(drop)
 
     def forward(self, x):
         """
@@ -34,7 +34,7 @@ class MultiHeadSelfAttention(nn.Module):
         return o
 
 class TransformerEncoder(nn.Module):
-    def __init__(self, in_c, head=8):
+    def __init__(self, in_c:int, head:int=8, drop:float=0.):
         super(TransformerEncoder, self).__init__()
         self.la1 = nn.LayerNorm(in_c)
         self.msa = MultiHeadSelfAttention(in_c, head)
@@ -42,10 +42,10 @@ class TransformerEncoder(nn.Module):
         self.mlp = nn.Sequential(
             nn.Linear(in_c, in_c),
             nn.GELU(),
-            nn.Dropout(0.1),
+            nn.Dropout(drop),
             nn.Linear(in_c, in_c),
             nn.GELU(),
-            nn.Dropout(0.1)
+            nn.Dropout(drop)
         )
 
     def forward(self, x):
