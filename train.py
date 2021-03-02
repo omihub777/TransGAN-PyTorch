@@ -28,8 +28,13 @@ parser.add_argument("--max-steps", default=20000, type=int)
 parser.add_argument("--log-steps", default=1000, type=int, help="Log images every this step.")
 parser.add_argument("--dry-run", action="store_true")
 parser.add_argument("--diffaugment", action="store_true")
+parser.add_argument("--seed", default=42, type=int)
 args = parser.parse_args()
 args.experiment_name = get_experiment_name(args)
+
+torch.manual_seed(args.seed)
+torch.backends.cudnn.benchmark=True
+
 if args.dry_run:
     args.max_steps = 1
     args.batch_size = 16
