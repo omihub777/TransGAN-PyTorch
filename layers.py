@@ -16,6 +16,7 @@ class MultiHeadSelfAttention(nn.Module):
         self.V = nn.Linear(in_c, in_c)
 
         self.O = nn.Linear(in_c, in_c)
+        self.dropout = nn.Dropout(0.1)
 
     def forward(self, x):
         """
@@ -29,7 +30,7 @@ class MultiHeadSelfAttention(nn.Module):
         score = torch.einsum("bihf, bjhf->bhij",q, k)
         attn = F.softmax(score/self.sqrt_d, dim=-1) # (b, h, n, n)
         o = torch.einsum("bhij,bjhf->bihf", attn, v)  # (b, n, h, f//self.head)
-        o = self.O(o.flatten(2))
+        o = self.dropout(self.O(o.flatten(2)))
         return o
 
 class TransformerEncoder(nn.Module):
@@ -38,11 +39,18 @@ class TransformerEncoder(nn.Module):
         self.la1 = nn.LayerNorm(in_c)
         self.msa = MultiHeadSelfAttention(in_c, head)
         self.la2 = nn.LayerNorm(in_c)
-        self.mlp = nn.Linear(in_c, in_c)
+        self.mlp = nn.Sequential(
+            nn.Linear(in_c, in_c),
+            nn.GELU(),
+            nn.Dropout(0.1),
+            nn.Linear(in_c, in_c),
+            nn.GELU(),
+            nn.Dropout(0.1)
+        )
 
     def forward(self, x):
         out = self.msa(self.la1(x))+x
-        out = F.gelu(self.mlp(self.la2(out)))+out
+        out = self.mlp(self.la2(out))+out
         return out
 
 class UpScale(nn.Module):
