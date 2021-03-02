@@ -52,19 +52,19 @@ class Trainer:
         criterion = get_criterion(self.args)
         optimizers = get_optimizer(g, d, self.args)
         while self.curr_step <= self.args.max_steps:
-            g.train()
-            d.train()
             for img, _ in train_dl:
                 img = img.to(self.device)
                 self.train_step(g, d, img, criterion, optimizers)
                 if self.args.dry_run:
                     break
-            g.eval()
-            self._log_image(g)
+                if self.curr_step % 1000:
+                    self._log_image(g)
 
         self._log_weight(g)
 
     def train_step(self, g, d, img, criterion, optimizers):
+        g.train()
+        d.train()
         g_opt, d_opt = optimizers
         g_opt.zero_grad()
         d_opt.zero_grad()
@@ -95,8 +95,9 @@ class Trainer:
         self.logger.log_metric("g_loss", loss)
 
         self.curr_step += 1
-            
+    
     def _log_image(self, g):
+        g.eval()
         z = torch.randn(32, self.emb_dim, device=self.device)
         with torch.cuda.amp.autocast():
             with torch.no_grad():
@@ -105,6 +106,7 @@ class Trainer:
         self.logger.log_image(f_grid.permute(1,2,0), step=self.curr_step)
 
     def _log_weight(self, g):
+        g.eval()
         filename=f"weights/{self.args.experiment_name}.pth"
         torch.save(g.cpu().state_dict(), filename)
         self.logger.log_asset(filename, file_name=filename)
