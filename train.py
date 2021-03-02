@@ -67,7 +67,6 @@ class Trainer:
                 img = img.to(self.device)
                 self.train_step(g, d, img, criterion, optimizers)
                 if self.curr_step % self.args.log_steps==0 or self.args.dry_run:
-                    import IPython ; IPython.embed() ; exit(1)
                     g.eval()
                     z = torch.randn(32, self.emb_dim, device=self.device)
                     with torch.cuda.amp.autocast():
