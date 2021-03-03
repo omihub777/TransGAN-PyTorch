@@ -62,7 +62,8 @@ class Trainer:
         g, d = g.to(self.device), d.to(self.device)
         criterion = get_criterion(self.args)
         optimizers = get_optimizer(g, d, self.args)
-        while self.curr_step <= self.args.max_steps:
+        epochs = math.ceil(self.args.max_steps / math.ceil(len(train_dl.dataset) / self.args.batch_size))
+        for epoch in range(1, epochs+1):
             for img, _ in train_dl:
                 img = img.to(self.device)
                 self.train_step(g, d, img, criterion, optimizers)
