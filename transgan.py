@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchsummary
+import einops
 
 from layers import TransformerEncoder, UpScale
 
@@ -98,8 +99,9 @@ class Discriminator(nn.Module):
         """
         (b, c, h, w) -> (b, n, f)
         """
-        out = x.unfold(2, self.patch_size, self.patch_size).unfold(3, self.patch_size, self.patch_size).permute(0,2,3,4,5,1).contiguous()
-        out = out.view(x.size(0), self.patch**2 ,-1)
+        # out = x.unfold(2, self.patch_size, self.patch_size).unfold(3, self.patch_size, self.patch_size).permute(0,2,3,4,5,1).contiguous()
+        # out = out.view(x.size(0), self.patch**2 ,-1)
+        out = einops.rearrange(x, "b c (h p1) (w p2) -> b (h w) (p1 p2 c)", p1=self.patch_size, p2=self.patch_size)
         return out
 
 

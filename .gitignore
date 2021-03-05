@@ -1,6 +1,7 @@
 todo.md
 data
 weights
+.DS_Store
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
